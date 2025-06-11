@@ -147,5 +147,16 @@ namespace EinstellungenApp
         {
             _cts?.Cancel();
         }
+
+        private async void OnRunRssReader(object sender, RoutedEventArgs e)
+        {
+            RssLog.Text = string.Empty;
+            var reader = new RssReader(msg => Dispatcher.Invoke(() =>
+            {
+                RssLog.AppendText(msg + System.Environment.NewLine);
+                RssLog.ScrollToEnd();
+            }));
+            await reader.RunAsync();
+        }
     }
 }
