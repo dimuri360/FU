@@ -1,0 +1,13 @@
+<Window x:Class="EinstellungenApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="EinstellungenApp" Height="350" Width="525">
+    <DockPanel>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Label Content="Einstellungen" />
+            </ToolBar>
+        </ToolBarTray>
+        <Grid />
+    </DockPanel>
+</Window>
