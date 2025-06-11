@@ -26,6 +26,7 @@ namespace EinstellungenApp
     public class Crawler
     {
         private readonly ConcurrentDictionary<string, int> _domCnt = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, int> _domSuccess = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, string> _proxies = new();
         private readonly ConcurrentDictionary<string, int> _hostDelay = new();
         private readonly ConcurrentDictionary<string, byte> _uniqLinks = new(StringComparer.OrdinalIgnoreCase);
@@ -72,8 +73,14 @@ namespace EinstellungenApp
             LoadCSV(options.DomainCsv, l =>
             {
                 var p = l.Split(',');
-                if (p.Length == 2 && int.TryParse(p[1], out var n))
-                    _domCnt[p[0]] = n;
+                if (p.Length >= 2 && int.TryParse(p[1], out var calls))
+                {
+                    _domCnt[p[0]] = calls;
+                    int succ = 0;
+                    if (p.Length >= 3)
+                        int.TryParse(p[2], out succ);
+                    _domSuccess[p[0]] = succ;
+                }
             });
 
             LoadCSV(options.ProxyCsv, l =>
@@ -92,7 +99,9 @@ namespace EinstellungenApp
             {
                 const string seed = "https://news.ycombinator.com";
                 queue.Enqueue(seed);
-                _domCnt.TryAdd(Root(new Uri(seed).Host), 0);
+                var rootHost = Root(new Uri(seed).Host);
+                _domCnt.TryAdd(rootHost, 0);
+                _domSuccess.TryAdd(rootHost, 0);
             }
 
             for (int round = 1; round <= options.Rounds; round++)
@@ -144,6 +153,7 @@ namespace EinstellungenApp
                 try
                 {
                     html = await _http.GetStringAsync(uri, token);
+                    _domSuccess.AddOrUpdate(root, 1, (_, v) => v + 1);
                     _hostDelay[root] = _options.MinDelayMs;
                 }
                 catch
@@ -164,7 +174,9 @@ namespace EinstellungenApp
                     if (!_uniqLinks.TryAdd(link, 0)) continue;
                     Interlocked.Increment(ref _linksFound);
                     if (!Uri.TryCreate(link, UriKind.Absolute, out var luri)) continue;
-                    _domCnt.TryAdd(Root(luri.Host), 0);
+                    var hostRoot = Root(luri.Host);
+                    _domCnt.TryAdd(hostRoot, 0);
+                    _domSuccess.TryAdd(hostRoot, 0);
                 }
             }
             finally { _gate.Release(); }
@@ -174,8 +186,12 @@ namespace EinstellungenApp
         {
             lock (_csvLock)
                 File.WriteAllLines(_options.DomainCsv,
-                    new[] { "domain,call_count" }
-                    .Concat(_domCnt.OrderBy(k => k.Key).Select(k => $"{k.Key},{k.Value}")));
+                    new[] { "domain,call_count,success_count" }
+                    .Concat(_domCnt.OrderBy(k => k.Key).Select(k =>
+                    {
+                        _domSuccess.TryGetValue(k.Key, out var succ);
+                        return $"{k.Key},{k.Value},{succ}";
+                    })));
 
             lock (_proxyLock)
                 File.WriteAllLines(_options.ProxyCsv,
