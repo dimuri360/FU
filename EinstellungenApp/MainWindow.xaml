@@ -32,6 +32,38 @@
                     <TextBox Grid.Row="2" x:Name="ProxyOutput" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
                 </Grid>
             </TabItem>
+            <TabItem Header="Crawler">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10" x:Name="CrawlerPanel">
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="Domain CSV:" Width="100"/>
+                            <TextBox x:Name="DomainCsvPath" Width="350"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="Proxy CSV:" Width="100"/>
+                            <TextBox x:Name="ProxyCsvPath" Width="350"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="Rounds:" Width="100"/>
+                            <TextBox x:Name="RoundsInput" Width="50" Text="5"/>
+                            <TextBlock Text="MaxParallel:" Margin="10,0,0,0"/>
+                            <TextBox x:Name="MaxParallelInput" Width="50" Text="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="MinDelay(ms):" Width="100"/>
+                            <TextBox x:Name="MinDelayInput" Width="50" Text="100"/>
+                            <TextBlock Text="MaxDelay(ms):" Margin="10,0,0,0"/>
+                            <TextBox x:Name="MaxDelayInput" Width="50" Text="3000"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="FlushInterval(s):" Width="100"/>
+                            <TextBox x:Name="FlushIntervalInput" Width="50" Text="60"/>
+                        </StackPanel>
+                        <Button Content="Start" Margin="0,5" Click="OnStartCrawler" Width="100"/>
+                        <TextBox x:Name="CrawlerLog" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="150" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

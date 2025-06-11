@@ -5,7 +5,9 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Linq;
+using System.IO;
 
 namespace EinstellungenApp
 {
@@ -16,6 +18,7 @@ namespace EinstellungenApp
         private readonly NetworkInterface[] _interfaces;
         private long _lastBytesSent;
         private long _lastBytesReceived;
+        private Crawler? _crawler;
 
         public MainWindow()
         {
@@ -99,6 +102,29 @@ namespace EinstellungenApp
                 unit++;
             }
             return $"{value:0.##} {units[unit]}";
+        }
+
+        private async void OnStartCrawler(object sender, RoutedEventArgs e)
+        {
+            CrawlerLog.Text = string.Empty;
+            var opts = new CrawlerOptions
+            {
+                DomainCsv = DomainCsvPath.Text,
+                ProxyCsv = ProxyCsvPath.Text,
+                Rounds = int.TryParse(RoundsInput.Text, out var r) ? r : 5,
+                MaxParallel = int.TryParse(MaxParallelInput.Text, out var mp) ? mp : 80,
+                MinDelayMs = int.TryParse(MinDelayInput.Text, out var mind) ? mind : 100,
+                MaxDelayMs = int.TryParse(MaxDelayInput.Text, out var maxd) ? maxd : 3000,
+                FlushIntervalSec = int.TryParse(FlushIntervalInput.Text, out var fl) ? fl : 60
+            };
+
+            _crawler = new Crawler(msg => Dispatcher.Invoke(() =>
+            {
+                CrawlerLog.AppendText(msg + System.Environment.NewLine);
+                CrawlerLog.ScrollToEnd();
+            }));
+
+            await Task.Run(() => _crawler.RunAsync(opts));
         }
     }
 }
