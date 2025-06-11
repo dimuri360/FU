@@ -3,11 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="EinstellungenApp" Height="350" Width="525">
     <DockPanel>
-        <ToolBarTray DockPanel.Dock="Top">
-            <ToolBar>
-                <Label Content="Einstellungen" />
-            </ToolBar>
-        </ToolBarTray>
-        <Grid />
+        <TabControl>
+            <TabItem Header="Einstellungen">
+                <Grid />
+            </TabItem>
+            <TabItem Header="Proxy">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="ProxyInput" AcceptsReturn="True" Height="100" />
+                    <Button Grid.Row="1" Content="Scan" Margin="0,5" Click="OnScanProxies" />
+                    <TextBox Grid.Row="2" x:Name="ProxyOutput" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
+                </Grid>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>
