@@ -69,6 +69,12 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Header="RSS Reader">
+                <StackPanel Margin="10">
+                    <Button Content="Run" Click="OnRunRssReader" Width="100" Margin="0,0,0,5"/>
+                    <TextBox x:Name="RssLog" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="150"/>
+                </StackPanel>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>
