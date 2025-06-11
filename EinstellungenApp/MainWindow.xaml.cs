@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using System.IO;
+using Microsoft.Win32;
 
 namespace EinstellungenApp
 {
@@ -19,6 +20,7 @@ namespace EinstellungenApp
         private long _lastBytesSent;
         private long _lastBytesReceived;
         private Crawler? _crawler;
+        private CancellationTokenSource? _cts;
 
         public MainWindow()
         {
@@ -104,6 +106,20 @@ namespace EinstellungenApp
             return $"{value:0.##} {units[unit]}";
         }
 
+        private void OnBrowseDomainCsv(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*" };
+            if (dlg.ShowDialog() == true)
+                DomainCsvPath.Text = dlg.FileName;
+        }
+
+        private void OnBrowseProxyCsv(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog { Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*" };
+            if (dlg.ShowDialog() == true)
+                ProxyCsvPath.Text = dlg.FileName;
+        }
+
         private async void OnStartCrawler(object sender, RoutedEventArgs e)
         {
             CrawlerLog.Text = string.Empty;
@@ -123,8 +139,13 @@ namespace EinstellungenApp
                 CrawlerLog.AppendText(msg + System.Environment.NewLine);
                 CrawlerLog.ScrollToEnd();
             }));
+            _cts = new CancellationTokenSource();
+            await Task.Run(() => _crawler.RunAsync(opts, _cts.Token));
+        }
 
-            await Task.Run(() => _crawler.RunAsync(opts));
+        private void OnStopCrawler(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
         }
     }
 }

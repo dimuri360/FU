@@ -37,11 +37,13 @@
                     <StackPanel Margin="10" x:Name="CrawlerPanel">
                         <StackPanel Orientation="Horizontal" Margin="0,2">
                             <TextBlock Text="Domain CSV:" Width="100"/>
-                            <TextBox x:Name="DomainCsvPath" Width="350"/>
+                            <TextBox x:Name="DomainCsvPath" Width="300"/>
+                            <Button Content="Browse..." Margin="5,0,0,0" Click="OnBrowseDomainCsv" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,2">
                             <TextBlock Text="Proxy CSV:" Width="100"/>
-                            <TextBox x:Name="ProxyCsvPath" Width="350"/>
+                            <TextBox x:Name="ProxyCsvPath" Width="300"/>
+                            <Button Content="Browse..." Margin="5,0,0,0" Click="OnBrowseProxyCsv" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,2">
                             <TextBlock Text="Rounds:" Width="100"/>
@@ -59,7 +61,10 @@
                             <TextBlock Text="FlushInterval(s):" Width="100"/>
                             <TextBox x:Name="FlushIntervalInput" Width="50" Text="60"/>
                         </StackPanel>
-                        <Button Content="Start" Margin="0,5" Click="OnStartCrawler" Width="100"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Button Content="Start" Click="OnStartCrawler" Width="100" Margin="0,0,5,0"/>
+                            <Button Content="Stop" Click="OnStopCrawler" Width="100"/>
+                        </StackPanel>
                         <TextBox x:Name="CrawlerLog" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="150" Margin="0,5,0,0"/>
                     </StackPanel>
                 </ScrollViewer>

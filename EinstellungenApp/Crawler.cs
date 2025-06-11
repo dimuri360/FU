@@ -30,6 +30,8 @@ namespace EinstellungenApp
         private readonly ConcurrentDictionary<string, int> _hostDelay = new();
         private readonly ConcurrentDictionary<string, byte> _uniqLinks = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _processed = new(StringComparer.OrdinalIgnoreCase);
+        private int _linksFound;
+        private int _proxiesFound;
 
         private HttpClient _http = null!;
         private Regex _rxProxy = new(@"\b(?:(?:\d{1,3}\.){3}\d{1,3}):\d{2,5}\b", RegexOptions.Compiled);
@@ -49,6 +51,8 @@ namespace EinstellungenApp
         public async Task RunAsync(CrawlerOptions options, CancellationToken token = default)
         {
             _options = options;
+            _linksFound = 0;
+            _proxiesFound = 0;
             _gate = new SemaphoreSlim(options.MaxParallel);
             var handler = new SocketsHttpHandler
             {
@@ -109,7 +113,7 @@ namespace EinstellungenApp
                     int pct = (int)(Interlocked.Increment(ref completed) * 100.0 / total);
                     int prev = Interlocked.Exchange(ref _lastPercent, pct);
                     if (pct > prev)
-                        _log($"{pct}% - Unique:{_uniqLinks.Count} - Proxies:{_proxies.Count}");
+                        _log($"{pct}% - Links:{_linksFound} - Proxies:{_proxiesFound}");
                 }).ToArray();
 
                 await Task.WhenAll(tasks);
@@ -149,12 +153,16 @@ namespace EinstellungenApp
                 }
 
                 foreach (Match m in _rxProxy.Matches(html))
-                    _proxies.TryAdd(m.Value, "PENDING");
+                {
+                    if (_proxies.TryAdd(m.Value, "PENDING"))
+                        Interlocked.Increment(ref _proxiesFound);
+                }
 
                 foreach (Match m in _rxLink.Matches(html))
                 {
                     string link = m.Value;
                     if (!_uniqLinks.TryAdd(link, 0)) continue;
+                    Interlocked.Increment(ref _linksFound);
                     if (!Uri.TryCreate(link, UriKind.Absolute, out var luri)) continue;
                     _domCnt.TryAdd(Root(luri.Host), 0);
                 }
