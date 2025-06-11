@@ -1,15 +1,34 @@
 using System.Windows;
+using System.Windows.Threading;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace EinstellungenApp
 {
     public partial class MainWindow : Window
     {
+        private readonly DispatcherTimer _timer;
+        private readonly PerformanceCounter _cpuCounter;
+        private readonly NetworkInterface[] _interfaces;
+        private long _lastBytesSent;
+        private long _lastBytesReceived;
+
         public MainWindow()
         {
             InitializeComponent();
+            _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            _cpuCounter.NextValue(); // prime
+            _interfaces = NetworkInterface.GetAllNetworkInterfaces();
+            _lastBytesSent = _interfaces.Sum(i => i.GetIPv4Statistics().BytesSent);
+            _lastBytesReceived = _interfaces.Sum(i => i.GetIPv4Statistics().BytesReceived);
+
+            _timer = new DispatcherTimer { Interval = System.TimeSpan.FromSeconds(1) };
+            _timer.Tick += UpdateStatus;
+            _timer.Start();
         }
 
         private async void OnScanProxies(object sender, RoutedEventArgs e)
@@ -44,6 +63,42 @@ namespace EinstellungenApp
             {
                 return false;
             }
+        }
+
+        private void UpdateStatus(object? sender, System.EventArgs e)
+        {
+            var cpu = _cpuCounter.NextValue();
+            CpuUsageText.Text = $"CPU: {cpu:F0}%";
+
+            long sent = 0;
+            long received = 0;
+            foreach (var ni in _interfaces)
+            {
+                var stats = ni.GetIPv4Statistics();
+                sent += stats.BytesSent;
+                received += stats.BytesReceived;
+            }
+
+            var upBytes = sent - _lastBytesSent;
+            var downBytes = received - _lastBytesReceived;
+            _lastBytesSent = sent;
+            _lastBytesReceived = received;
+
+            NetUpText.Text = $"Up: {FormatBytes(upBytes)}/s";
+            NetDownText.Text = $"Down: {FormatBytes(downBytes)}/s";
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            double value = bytes;
+            string[] units = { "B", "KB", "MB", "GB" };
+            int unit = 0;
+            while (value >= 1024 && unit < units.Length - 1)
+            {
+                value /= 1024;
+                unit++;
+            }
+            return $"{value:0.##} {units[unit]}";
         }
     }
 }

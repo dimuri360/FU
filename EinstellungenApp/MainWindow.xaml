@@ -3,6 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="EinstellungenApp" Height="350" Width="525">
     <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock x:Name="CpuUsageText" Text="CPU: 0%" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock x:Name="NetDownText" Text="Down: 0 B/s" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock x:Name="NetUpText" Text="Up: 0 B/s" />
+            </StatusBarItem>
+        </StatusBar>
         <TabControl>
             <TabItem Header="Einstellungen">
                 <Grid />
